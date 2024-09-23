@@ -54,19 +54,29 @@ public class UserController {
         // 一覧画面にリダイレクト
         return "redirect:/user/list";
     }
-    
+
     /** User更新画面を表示 */
     @GetMapping("/update/{id}/")
     public String getUser(@PathVariable("id") Integer id, Model model) {
-        // Modelに登録
-        model.addAttribute("user", service.getUser(id));
+        if (id != null) {
+            // 一覧画面から遷移
+            model.addAttribute("user", service.getUser(id));
+        } else {
+            // postUser()から遷移
+            model.addAttribute("user", model.getAttribute("user"));
+        }
         // User更新画面に遷移
         return "user/update";
     }
 
     /** User更新処理 */
     @PostMapping("/update/{id}/")
-    public String postUser(User user) {
+    public String postUser(@Validated @ModelAttribute User user, BindingResult res, Model model) {
+        if (res.hasErrors()) {
+            // エラーあり
+            model.addAttribute("user", user);
+            return getUser(null, model);
+        }
         // User登録
         service.saveUser(user);
         // 一覧画面にリダイレクト
